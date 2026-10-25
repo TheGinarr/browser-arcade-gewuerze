@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#07070f" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f2f3f9" media="(prefers-color-scheme: light)" />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <script src="./assets/thema.js?v=20261024"></script>
+    <link rel="stylesheet" href="./assets/style.css?v=20261024w" />
+    <link rel="stylesheet" href="./assets/sortieren/spiel.css?v=20261024t" />
+    <link rel="stylesheet" href="./assets/sortieren/umgebung.css?v=20261024" />
+    <title>Gewürze · Browser-Arcade</title>
+    <meta
+      name="description"
+      content="Gewürze: Schiebe-Puzzle mit 50 Leveln – Reihen und Spalten im Drehregal verschieben, bis jede Spalte nur eine Gewürzsorte enthält."
+    />
+  </head>
+  <body style="--ak: var(--lime)">
+    <div class="raster" aria-hidden="true"></div>
+    <a class="skip-link" href="#main">Zum Inhalt springen</a>
+    <header class="kopf">
+      <nav class="container nav" aria-label="Hauptnavigation">
+        <a class="marke" href="./"><span class="logo">▶</span>GAMES</a>
+        <div class="nav-links">
+          <a href="./impressum.html">Impressum</a><a href="./datenschutz.html">Datenschutz</a>
+        </div>
+      </nav>
+    </header>
+    <main id="main" class="container">
+      <div class="spiel-kopf">
+        <div>
+          <h1>GEWÜRZE</h1>
+          <p class="unterzeile">
+            Das Drehregal: Schieb Reihen und Spalten, bis jedes Gewürz unter seinem Etikett steht.
+            50 Level von 3×3 bis 5×5.
+          </p>
+        </div>
+      </div>
+
+      <!-- Levelkarte: Kapitel zu je 10 Leveln -->
+      <section id="karte" aria-labelledby="karte-titel">
+        <h2 id="karte-titel" class="sr-only">Levelkarte</h2>
+        <div class="karten-kopf">
+          <button type="button" class="knopf primaer" id="weiter" hidden></button>
+          <p id="karten-text"></p>
+        </div>
+        <div id="level-raster"></div>
+      </section>
+
+      <!-- Spielfeld -->
+      <section id="spielfeld" hidden aria-labelledby="level-titel">
+        <h2 id="level-titel" class="level-titel"></h2>
+        <div class="hud">
+          <div class="hud-feld">
+            <div class="label">Level</div>
+            <div class="wert" id="hud-level">--</div>
+          </div>
+          <div class="hud-feld">
+            <div class="label">Züge</div>
+            <div class="wert" id="hud-zuege">0</div>
+          </div>
+          <div class="hud-feld">
+            <div class="label">★★★ bis</div>
+            <div class="wert" id="hud-ziel">--</div>
+          </div>
+          <div class="hud-feld">
+            <div class="label" id="hud-zeit-label">Zeit</div>
+            <div class="wert" id="hud-zeit">00:00</div>
+          </div>
+          <div class="hud-feld">
+            <div class="label">Bestes</div>
+            <div class="wert" id="hud-sterne">☆☆☆</div>
+          </div>
+        </div>
+        <div class="werkzeuge">
+          <button type="button" class="knopf" id="rueck">↶ Zurück <small>(Z)</small></button>
+          <button type="button" class="knopf" id="tipp">Tipp <small>(H)</small></button>
+          <button type="button" class="knopf" id="neustart">Neustart <small>(R)</small></button>
+          <button type="button" class="knopf" id="hilfe">? Regeln</button>
+          <button type="button" class="knopf" id="zur-karte">Levelkarte</button>
+        </div>
+        <div class="einfuehrung" id="einfuehrung" hidden></div>
+        <p class="meldung" id="meldung" hidden></p>
+        <div class="brett gewuerze-brett" id="brett" role="group" aria-label="Spielfeld"></div>
+        <p class="steuerung">
+          Maus/Touch: Pfeile antippen oder ein Glas nach links/rechts/oben/unten wischen. Tastatur:
+          Glas mit <kbd>Tab</kbd> wählen, dann <kbd>←</kbd><kbd>→</kbd> schiebt die Reihe,
+          <kbd>↑</kbd><kbd>↓</kbd> die Spalte; <kbd>Z</kbd> zurück, <kbd>H</kbd> Tipp,
+          <kbd>R</kbd> neu.
+        </p>
+      </section>
+      <p class="sr-only" id="status" role="status" aria-live="polite"></p>
+
+      <section style="max-width: 420px; margin-top: 36px">
+        <h2 style="font-family: var(--pixel); font-weight: 400; font-size: 0.85rem">
+          Topliste · Sterne gesamt
+        </h2>
+        <div id="topliste"></div>
+        <button class="knopf" id="reset" style="margin-top: 10px">Spielstand zurücksetzen</button>
+      </section>
+
+      <section class="lernbox">
+        <details open>
+          <summary>Anleitung &amp; Regeln</summary>
+          <ul>
+            <li>
+              <strong>Ziel:</strong> Über jeder Spalte hängt ein Etikett. Am Ende stehen in jeder
+              Spalte nur Gläser dieser Sorte.
+            </li>
+            <li>
+              <strong>Schieben:</strong> Die Pfeile links/rechts schieben eine ganze
+              <strong>Reihe</strong>, die Pfeile oben/unten eine ganze <strong>Spalte</strong> um
+              ein Feld. Was auf einer Seite herausfällt, kommt auf der anderen wieder herein – wie
+              bei einem Drehregal.
+            </li>
+            <li>
+              <strong>Schlösser</strong> (ab Level 16): Eine Reihe oder Spalte mit Schloss lässt
+              sich nicht schieben – du musst um sie herum arbeiten.
+            </li>
+            <li>Grün hinterlegte Felder stehen schon richtig.</li>
+            <li>
+              <strong>Sterne:</strong> Jedes Level hat einen Zielwert – so viele Züge brauchte die
+              beste Lösung, die der Computer gefunden hat. Drei Sterne gibt es bis zu 10 % darüber,
+              zwei bis zum Anderthalbfachen, sonst einen. Ein geschafftes Level schaltet das nächste
+              frei.
+            </li>
+            <li>
+              <strong>Zurück</strong> nimmt beliebig viele Züge zurück, der
+              <strong>Tipp</strong> zeigt einen guten nächsten Zug, <strong>? Regeln</strong> zeigt
+              die Erklärung erneut. In die <strong>Topliste</strong> geht die Summe deiner Sterne
+              (höchstens 150).
+            </li>
+          </ul>
+        </details>
+      </section>
+
+      <section class="lernbox">
+        <details>
+          <summary>Wie funktioniert der Code?</summary>
+          <ul>
+            <li>
+              <strong>Raster als Liste:</strong> Die Gläser stehen zeilenweise in einer Liste. Eine
+              Reihe zu schieben heißt: Feld <code>c</code> wandert nach
+              <code>(c + 1) mod Spalten</code> – das <code>mod</code> macht das Drehregal.
+            </li>
+            <li>
+              <strong>Schätzung für den Löser:</strong> Für jede Reihe wird die beste Drehung
+              gesucht (Kosten = Schiebezüge) plus ein halber Zug je Glas, das danach noch falsch
+              steht. Damit löst er auch 5×5 in Bruchteilen einer Sekunde.
+            </li>
+            <li>
+              <strong>Gemeinsamer Rahmen:</strong> Levelkarte, Rückgängig, Tipp, Uhr und Siegdialog
+              stecken in <code>assets/sortieren/rahmen.js</code> und werden von allen drei
+              Sortierspielen benutzt. Das Spiel selbst liefert nur Regeln und Zeichnung.
+            </li>
+            <li>
+              <strong>Zustand:</strong> Ein Zug erzeugt einen <em>neuen</em> Zustand, statt den
+              alten zu verändern. „Rückgängig“ ist darum nur eine Liste alter Zustände.
+            </li>
+            <li>
+              <strong>Der Löser (gewichtetes A*):</strong> Er untersucht immer den Zustand mit der
+              kleinsten Summe aus „Züge bisher“ und „geschätzte Züge noch“ (Binär-Heap) und merkt
+              sich Gesehenes in einer <code>Map</code>. Ein Node-Skript hat damit jedes der 50 Level
+              geprüft und den Zielwert festgelegt; im Browser liefert er den Tipp.
+            </li>
+            <li>
+              <strong>Bildchen:</strong> Alles ist eigene SVG-Grafik im Code
+              (<code>assets/sortieren/symbole.js</code>), keine fremden Bilder. Jede Sorte trägt
+              zusätzlich ein Zeichen – so geht es auch ohne Farbsehen.
+            </li>
+          </ul>
+        </details>
+      </section>
+    </main>
+    <footer class="fuss">
+      <div class="container fuss-in">
+        <span>Browser-Arcade · Open Source</span>
+        <nav aria-label="Rechtliches">
+          <a href="./impressum.html">Impressum</a><a href="./datenschutz.html">Datenschutz</a>
+        </nav>
+      </div>
+    </footer>
+    <script type="module" src="./game.js?v=20261023f"></script>
+  </body>
+</html>
